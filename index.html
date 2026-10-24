@@ -418,7 +418,7 @@ pastors.forEach((pastor, index) => {
   tile.className = `tile ${colors[index % colors.length]}`;
   tile.setAttribute(
     "aria-label",
-    `${pastor.name}，${pastor.church}，查看詳細資料`
+    `${pastor.name}，${pastor.church}，簡介`
   );
 
   const fallback = document.createElement("div");
@@ -444,7 +444,7 @@ pastors.forEach((pastor, index) => {
 
   const hint = document.createElement("div");
   hint.className = "hint";
-  hint.textContent = "查看教會資訊  →";
+  hint.textContent = "簡介  →";
 
   info.append(name, hint);
   tile.appendChild(info);
