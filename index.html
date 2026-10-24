@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>開堂禮拜出席貴賓</title>
+<style>
+:root {
+  --bg: #171717;
+  --tile-gap: 12px;
+  --accent: #00a4ef;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #fff;
+  font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+header {
+  padding: 38px 5vw 26px;
+}
+
+header h1 {
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 300;
+  margin: 0 0 12px;
+}
+
+header p {
+  color: #c7c7c7;
+  margin: 0;
+  line-height: 1.8;
+}
+
+.wall {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--tile-gap);
+  padding: 0 5vw 50px;
+}
+
+.tile {
+  position: relative;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  cursor: pointer;
+  background: #34495e;
+  color: white;
+  text-align: left;
+  isolation: isolate;
+  transition: transform .2s, filter .2s;
+}
+
+.tile:hover {
+  transform: scale(1.025);
+  filter: brightness(1.12);
+  z-index: 1;
+}
+
+.tile:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 3px;
+}
+
+.tile img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform .35s;
+}
+
+.tile:hover img { transform: scale(1.04); }
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 25% 0 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.88));
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tile-info {
+  position: absolute;
+  left: 15px;
+  right: 12px;
+  bottom: 15px;
+  z-index: 1;
+}
+
+.tile-info .name {
+  font-size: clamp(14px, 1.35vw, 19px);
+  line-height: 1.5;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tile-info .hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #e2e2e2;
+}
+
+.tile .fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  font-weight: 300;
+  background: var(--tile-color, #0078d7);
+  z-index: -1;
+}
+
+/* Metro 色彩 */
+.c1  { --tile-color: #0078d7; background: #0078d7; }
+.c2  { --tile-color: #008a00; background: #008a00; }
+.c3  { --tile-color: #e74856; background: #e74856; }
+.c4  { --tile-color: #603cba; background: #603cba; }
+.c5  { --tile-color: #008b8b; background: #008b8b; }
+.c6  { --tile-color: #ca5010; background: #ca5010; }
+.c7  { --tile-color: #8764b8; background: #8764b8; }
+.c8  { --tile-color: #107c10; background: #107c10; }
+
+footer {
+  padding: 20px 5vw 35px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* 詳細資料視窗 */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,.82);
+}
+
+.modal.open { display: flex; }
+
+.modal-content {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: #242424;
+  box-shadow: 0 15px 60px rgba(0,0,0,.5);
+  animation: appear .2s ease-out;
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-photo {
+  min-height: 360px;
+  background: #333;
+}
+
+.modal-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  object-fit: cover;
+}
+
+.modal-details {
+  padding: 45px 30px 35px;
+  align-self: center;
+}
+
+.modal-details .label {
+  color: #aaa;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.modal-details h2 {
+  font-size: 27px;
+  line-height: 1.5;
+  font-weight: 400;
+  margin: 0 0 25px;
+  overflow-wrap: anywhere;
+}
+
+.modal-details .church {
+  font-size: 20px;
+  line-height: 1.8;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.modal-details .role {
+  color: #bdbdbd;
+  margin-top: 12px;
+  line-height: 1.8;
+}
+
+.close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  background: rgba(0,0,0,.6);
+  color: white;
+  border: 0;
+  border-radius: 50%;
+  font-size: 27px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+@media (max-width: 1000px) {
+  .wall { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  header { padding: 28px 18px 22px; }
+  .wall {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 12px 35px;
+  }
+  .tile { aspect-ratio: 4 / 5; }
+  .tile-info { left: 10px; bottom: 10px; }
+  .modal-content { grid-template-columns: 1fr; }
+  .modal-photo { height: 40vh; min-height: 200px; }
+  .modal-photo img { height: 40vh; min-height: 200px; }
+  .modal-details { padding: 25px 24px 30px; }
+  .modal-details h2 { font-size: 23px; margin-bottom: 15px; }
+  .modal-details .church { font-size: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>教會開堂禮拜出席牧者貴賓</h1>
+  <p>認識出席貴賓</p>
+</header>
+
+<main class="wall" id="wall" aria-label="牧者照片列表"></main>
+
+<footer>
+  牧者照片 ｜ 點選任一照片即可查看詳細資料
+</footer>
+
+<div class="modal" id="modal" role="dialog"
+     aria-modal="true" aria-labelledby="modalName">
+  <div class="modal-content">
+    <button class="close" id="closeBtn"
+            aria-label="關閉視窗">×</button>
+    <div class="modal-photo">
+      <img id="modalImage" src="" alt="">
+    </div>
+    <div class="modal-details">
+      <div class="label">PASTOR / MINISTRY</div>
+      <h2 id="modalName"></h2>
+      <div class="church" id="modalChurch"></div>
+      <div class="role" id="modalRole"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const pastors = [
+  {
+    name: "張學瑜",
+    role: "牧者",
+    church: "木柵基督徒聚會",
+    photo: "photos/pastor-01.png"
+  },
+  {
+    name: "許珮婷",
+    role: "牧師",
+    church: "中壢靈糧堂",
+    photo: "photos/pastor-02.png"
+  },
+  {
+    name: "黃陳純心",
+    role: "傳道",
+    church: "中壢靈糧堂",
+    photo: "photos/pastor-03.png"
+  },
+  {
+    name: "黃銘富",
+    role: "牧師",
+    church: "龍岡靈糧堂",
+    photo: "photos/pastor-04.png"
+  },
+  {
+    name: "潘慧君",
+    role: "師母",
+    church: "龍岡靈糧堂",
+    photo: "photos/pastor-05.png"
+  },
+  {
+    name: "王家熙",
+    role: "牧師",
+    church: "南崁靈糧堂",
+    photo: "photos/pastor-06.png"
+  },
+  {
+    name: "許慧儀",
+    role: "傳道",
+    church: "南崁靈糧堂",
+    photo: "photos/pastor-07.png"
+  },
+  {
+    name: "吳嘉純",
+    role: "牧師",
+    church: "靈糧網絡",
+    photo: "photos/pastor-08.png"
+  },
+  {
+    name: "陶君亮",
+    role: "董事長",
+    church: "全福會桃園分會前會長",
+    photo: "photos/pastor-09.png"
+  },
+  {
+    name: "余華芬",
+    role: "牧師",
+    church: "八德靈糧堂",
+    photo: "photos/pastor-10.png"
+  },
+  {
+    name: "梁冠凱",
+    role: "傳道",
+    church: "八德靈糧堂",
+    photo: "photos/pastor-11.png"
+  },
+  {
+    name: "黃成熙",
+    role: "牧師",
+    church: "過嶺靈糧堂",
+    photo: "photos/pastor-12.png"
+  },
+  {
+    name: "孫婉娟",
+    role: "牧師",
+    church: "過嶺靈糧堂",
+    photo: "photos/pastor-13.png"
+  },
+  {
+    name: "王桂華",
+    role: "牧師",
+    church: "中靈網絡",
+    photo: "photos/pastor-14.png"
+  },
+  {
+    name: "曾勝豐",
+    role: "牧師",
+    church: "中靈網絡",
+    photo: "photos/pastor-15.png"
+  },
+  {
+    name: "歐陽蘭春",
+    role: "傳道",
+    church: "法國號靈糧堂",
+    photo: "photos/pastor-16.png"
+  },
+  {
+    name: "詹明晃",
+    role: "牧師",
+    church: "航空城歸主教會",
+    photo: "photos/pastor-17.png"
+  },
+  {
+    name: "洪美麗",
+    role: "牧師",
+    church: "基督徒敬拜中心",
+    photo: "photos/pastor-18.png"
+  },
+  {
+    name: "黃光恩",
+    role: "牧者",
+    church: "多加教會",
+    photo: "photos/pastor-19.png"
+  }
+];
+
+const colors = ["c1", "c2", "c3", "c4",
+                "c5", "c6", "c7", "c8"];
+const wall = document.getElementById("wall");
+const modal = document.getElementById("modal");
+const modalImage = document.getElementById("modalImage");
+const closeBtn = document.getElementById("closeBtn");
+let lastFocus = null;
+
+pastors.forEach((pastor, index) => {
+  const tile = document.createElement("button");
+  tile.type = "button";
+  tile.className = `tile ${colors[index % colors.length]}`;
+  tile.setAttribute(
+    "aria-label",
+    `${pastor.name}，${pastor.church}，查看詳細資料`
+  );
+
+  const fallback = document.createElement("div");
+  fallback.className = "fallback";
+  fallback.textContent = pastor.name.charAt(0);
+  tile.appendChild(fallback);
+
+  const img = document.createElement("img");
+  img.src = pastor.photo;
+  img.alt = pastor.name;
+  img.loading = "lazy";
+  img.onerror = () => {
+    img.style.display = "none";
+  };
+  tile.appendChild(img);
+
+  const info = document.createElement("div");
+  info.className = "tile-info";
+
+  const name = document.createElement("div");
+  name.className = "name";
+  name.textContent = pastor.name;
+
+  const hint = document.createElement("div");
+  hint.className = "hint";
+  hint.textContent = "查看教會資訊  →";
+
+  info.append(name, hint);
+  tile.appendChild(info);
+
+  tile.addEventListener("click", () => {
+    openModal(pastor, tile);
+  });
+
+  wall.appendChild(tile);
+});
+
+function openModal(pastor, trigger) {
+  lastFocus = trigger;
+  modalImage.src = pastor.photo;
+  modalImage.alt = pastor.name;
+  modalImage.onerror = () => {
+    modalImage.style.visibility = "hidden";
+  };
+  modalImage.onload = () => {
+    modalImage.style.visibility = "visible";
+  };
+
+  document.getElementById("modalName").textContent =
+    pastor.name;
+  document.getElementById("modalChurch").textContent =
+    pastor.church;
+  document.getElementById("modalRole").textContent =
+    pastor.role;
+
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+  closeBtn.focus();
+}
+
+function closeModal() {
+  modal.classList.remove("open");
+  document.body.style.overflow = "";
+  modalImage.src = "";
+  if (lastFocus) lastFocus.focus();
+}
+
+closeBtn.addEventListener("click", closeModal);
+
+modal.addEventListener("click", (event) => {
+  if (event.target === modal) closeModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && modal.classList.contains("open")) {
+    closeModal();
+  }
+});
+</script>
+
+</body>
+</html>
